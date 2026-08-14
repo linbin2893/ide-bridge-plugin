@@ -1,0 +1,34 @@
+<idea-plugin>
+    <id>com.dsh.idebridge</id>
+    <name>DSH IDE Bridge</name>
+    <vendor>DSH</vendor>
+
+    <description><![CDATA[
+        把 IntelliJ IDEA 中选中的代码（或光标所在的类 / 函数）一键发送到 DeepSeek Harness 当前对话窗口的输入框。
+        代码会以草稿形式出现在输入框中，并附带项目名、相对路径、语言、行号、类名等元数据，
+        由你审阅、编辑、补充后手动点击发送。<br><br>
+        DSH 侧需要运行 ide-bridge 接收插件（协议：POST /ide/context，详见设计文档）。
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+
+    <actions>
+        <action id="DshIdeBridge.SendContext"
+                class="com.dsh.idebridge.IdeBridgeAction"
+                text="发送到 DeepSeek Harness"
+                description="将选中代码或光标所在的类 / 函数作为草稿发送到 DSH 输入框">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift D"/>
+        </action>
+    </actions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.dsh.idebridge.settings.BridgeSettings"/>
+        <applicationConfigurable parentId="tools"
+                                 instance="com.dsh.idebridge.settings.BridgeSettingsConfigurable"
+                                 id="com.dsh.idebridge.settings"
+                                 displayName="DSH IDE Bridge"/>
+        <notificationGroup id="DSH IDE Bridge" displayType="BALLOON"/>
+    </extensions>
+</idea-plugin>

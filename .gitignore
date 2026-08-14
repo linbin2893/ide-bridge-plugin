@@ -1,0 +1,30 @@
+# ---- Gradle ----
+.gradle/
+build/
+# wrapper 的 jar 必须入库，否则 clone 下来跑不了 ./gradlew
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin 2.x 增量编译的会话目录，纯本地状态
+.kotlin/
+
+# intellijPlatform 2.x 下载并解压的 IDE 发行版与插件产物，体积大且完全可重建
+.intellijPlatform/
+
+# ---- IntelliJ IDEA ----
+# 本项目的 .idea 全部由 Gradle 导入自动生成，重新 Reload 即可重建；
+# 其中 workspace.xml 还带本机路径与窗口布局，入库只会制造无谓冲突
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# 本机覆盖配置（SDK 路径等），不应共享
+local.properties
+
+# ---- OS / 编辑器杂项 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~

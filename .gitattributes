@@ -1,0 +1,17 @@
+# 默认由 Git 判断文本/二进制，工作区一律 LF
+* text=auto eol=lf
+
+# Windows 批处理必须是 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# gradlew 是 sh 脚本，一旦被转成 CRLF，在 Git Bash / Linux 下会报
+# "bad interpreter: No such file or directory"
+gradlew text eol=lf
+
+# 二进制，不做任何换行转换
+*.jar binary
+*.zip binary
+*.png binary
+*.ico binary
+*.svg binary
