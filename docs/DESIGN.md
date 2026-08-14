@@ -481,13 +481,22 @@ ide-bridge/
 `dsh-ide-bridge` 是其成员，§16 列的三处配置（`cordis.patch.yml` / `pnpm-workspace.yaml` /
 profile `package.json`）全部按**精确名**引用它。目录一旦移走，loader 就解析不到包。
 
-**解法**：把 §16 内层已在用的 junction 手法往上提一层——真身进仓库，
-原位置留 `~/.dsh/profiles/web/dsh-ide-bridge` → `<repo>/dsh-plugin` 的 junction。
-于是变成两层：外层接仓库（本次新增），内层 `node_modules/dsh-ide-bridge` 仍由 pnpm 建。
-junction 对 pnpm 与 Node 解析均透明，**profile 那三处配置一个字都不用改**。
+**评估过但未采用的方案**：把 §16 内层已在用的 junction 手法往上提一层——
+真身进仓库，`~/.dsh/profiles/web/dsh-ide-bridge` 留一个指向 `<repo>/dsh-plugin` 的 junction。
+实测两层 junction 链可完整穿透（`node_modules/dsh-ide-bridge` → profiles 目录 → 仓库），
+Node 也能穿过它 `--check` 通过两个 ESM 文件；但**未经真实 DSH 启动验证**即按决定回退。
+profiles 侧现已恢复为独立真实目录。若日后重新考虑，已知的前置结论是：
+junction 对 pnpm 与 Node 解析透明，profile 那三处配置无需改动。
+
+**当前采用的方案**：`dsh-plugin/` 是开发源码（权威版本），
+`~/.dsh/profiles/web/dsh-ide-bridge/` 是 DSH 实际加载的独立副本，两者**手动同步**。
+
+> 已知代价：改完仓库不同步就重启 DSH，表现是「代码改了却毫无变化」，
+> 且无任何报错。排查这类现象时第一步应是比对两边文件是否一致。
 
 **连带影响**：
 - 构建路径变为 `idea-plugin/gradlew buildPlugin`，产物落在 `idea-plugin/build/distributions/`
-- `.gitignore` 增加 `node_modules/`——pnpm install 会顺着 junction 在本仓库内生成它
 - `.gitignore` 中 wrapper jar 的否定规则改用 `**/` 前缀，否则下移后锚定路径失配
+- `.gitignore` 保留 `node_modules/` 一条：当前方案下仓库内不会生成它，
+  但该目录任何情况下都不应入库，留着无害
 - 两端 README 的交叉引用改为仓库内相对路径，不再依赖任何绝对路径

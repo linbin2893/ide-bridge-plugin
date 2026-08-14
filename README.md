@@ -47,15 +47,16 @@ cd idea-plugin
 跑 Gradle 的 JDK 必须是 17～23（Kotlin 2.0.21 的编译器不认 JDK 25 的版本号）。
 详见 [`idea-plugin/README.md`](idea-plugin/README.md)。
 
-**DSH 端**——源码真身在本仓库，DSH 那边挂一个 junction 指过来：
+**DSH 端**——本仓库的 `dsh-plugin/` 是开发源码，DSH 实际加载的是
+`~/.dsh/profiles/web/dsh-ide-bridge/` 那份独立副本。改完要手动同步过去：
 
 ```powershell
-mklink /J "$env:USERPROFILE\.dsh\profiles\web\dsh-ide-bridge" "<repo>\dsh-plugin"
+Copy-Item -Recurse -Force "dsh-plugin\*" "$env:USERPROFILE\.dsh\profiles\web\dsh-ide-bridge\"
 ```
 
-junction 名必须是 `dsh-ide-bridge`（profile 的 pnpm workspace 按精确名匹配成员），
-指向的仓库内目录叫什么都行。这样 DSH 升级不会覆盖插件，改动也直接进版本控制。
-另需 profile 层三处配置，见 [`dsh-plugin/README.md`](dsh-plugin/README.md)。
+⚠️ 这一步没有任何自动化兜底，**忘了同步的症状是「改了代码毫无变化」且不报错**。
+profile 侧的挂载配置（`cordis.patch.yml` 等三处）已经就位，不需要再动，
+详见 [`dsh-plugin/README.md`](dsh-plugin/README.md)。
 
 > 两端改动都需要重启对应宿主才生效：IDEA 端重装插件重启 IDE，DSH 端重启 DSH
 > （client bundle 的 rev 在进程启动时计算）。
@@ -73,8 +74,8 @@ GET  /ide/health    → { ok, plugin, version, pendingDrafts }
 
 | 字段 | 取值 |
 |---|---|
-| `selection.kind` | `selection` \| `class`（Java 整类）\| `declaration`（其他语言的具名声明） |
-| `symbol.kind` | `class` \| `declaration` \| `null` |
+| `selection.kind` | `selection` / `class`（Java 整类）/ `declaration`（其他语言的具名声明） |
+| `symbol.kind` | `class` / `declaration` / `null` |
 | `code` | 选区时非空（`kind="selection"` 强制非空）；无选区的纯引用可传 `""` |
 
 单条上限 120 KB，超出返回 413。

@@ -3,9 +3,16 @@
 从 IntelliJ IDEA 接收代码上下文，填入 DSH 当前会话输入框草稿。对端是本仓库的
 [`../idea-plugin/`](../idea-plugin/)。
 
-源码真身在**本仓库**，`~/.dsh/profiles/web/dsh-ide-bridge` 只是指向这里的 junction。
-DSH 只认 profiles 下那个路径（pnpm workspace 按名字匹配成员），但文件由本仓库管：
-DSH 升级不会覆盖它，改动也直接落进版本控制。
+**本目录是开发源码，不是 DSH 实际加载的那份。** DSH 加载的是
+`~/.dsh/profiles/web/dsh-ide-bridge/`，那里保持独立的真实目录（不是链接）。
+
+> ⚠️ **改完这里不会自动生效。** 两处是彼此独立的副本，必须手动同步过去再重启 DSH：
+>
+> ```powershell
+> Copy-Item -Recurse -Force "<repo>\dsh-plugin\*" "$env:USERPROFILE\.dsh\profiles\web\dsh-ide-bridge\"
+> ```
+>
+> 忘了这一步的症状是「改了代码却毫无变化」，且没有任何报错——排查时先核对两边文件是否一致。
 
 ## 结构
 
@@ -16,15 +23,13 @@ DSH 升级不会覆盖它，改动也直接落进版本控制。
 
 ## 挂载方式（在 profile 层，不碰部署）
 
-有两层 junction，别搞混：外层把仓库接进 profile，内层是 pnpm 常规产物。
+以下全部发生在 `~/.dsh/profiles/web/` 那份副本上，与本仓库无关：
 
-1. `~/.dsh/profiles/web/dsh-ide-bridge` → junction 指向本仓库的 `dsh-plugin/`
-   （`mklink /J`，普通权限即可；名字必须是 `dsh-ide-bridge`，workspace 按精确名匹配）
-2. `cordis.patch.yml` 里有一行 insert：`- insert: [{ id: ide-bridge, name: dsh-ide-bridge }]`
-3. `pnpm-workspace.yaml` 的 packages 含 `dsh-ide-bridge`
-4. profile `package.json` 依赖 `"dsh-ide-bridge": "workspace:^"`
-5. `node_modules/dsh-ide-bridge` → junction 指向上面第 1 步那个路径（由 pnpm 创建）
-6. 重启 DSH 生效
+1. `cordis.patch.yml` 里有一行 insert：`- insert: [{ id: ide-bridge, name: dsh-ide-bridge }]`
+2. `pnpm-workspace.yaml` 的 packages 含 `dsh-ide-bridge`
+3. profile `package.json` 依赖 `"dsh-ide-bridge": "workspace:^"`
+4. `node_modules/dsh-ide-bridge` 是指向该目录的 junction（由安装脚本创建）
+5. 重启 DSH 生效
 
 ## DSH 升级后如何重新引入/适配
 

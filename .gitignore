@@ -12,8 +12,9 @@ build/
 .intellijPlatform/
 
 # ---- Node / pnpm ----
-# dsh-plugin 经 junction 挂载为 DSH profile 的 pnpm workspace 成员，
-# 在 ~/.dsh/profiles/web/ 下跑 pnpm install 会顺着 junction 在本仓库里生成 node_modules
+# dsh-plugin 是纯 ESM 且无外部依赖，正常不产生 node_modules；
+# 但它与 DSH profile 下那份运行副本同源，那边是 pnpm workspace 成员，
+# 万一在此误跑 pnpm install，产物也不该入库
 node_modules/
 .pnpm-debug.log*
 
