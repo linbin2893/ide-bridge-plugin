@@ -15,11 +15,15 @@
 
 ## 构建（IDEA 内）
 
-1. 用 IDEA 打开本目录，Gradle 面板刷新（Reload）
-2. 运行任务：
-   - `buildPlugin` → 产物 `build/distributions/dsh-ide-bridge-0.1.2.zip`
+本模块是仓库根那个 Gradle 多项目构建的子项目，**IDEA 要打开仓库根目录**，不是本目录
+（本目录没有 `settings.gradle.kts`，单独打开会被当成不完整的构建）。
+
+1. 用 IDEA 打开**仓库根**，Gradle 面板刷新（Reload）
+2. 运行任务（都在 `:idea-plugin` 下）：
+   - `buildPlugin` → 产物 `idea-plugin/build/distributions/dsh-ide-bridge-0.1.2.zip`
    - `runIde` → 启动带本插件的沙箱 IDEA 联调
-3. 命令行构建：`./gradlew buildPlugin`（wrapper 已锁定 9.1.0，Windows 用 `gradlew.bat`）
+3. 命令行构建（在仓库根）：`./gradlew :idea-plugin:buildPlugin`
+   （wrapper 已锁定 9.1.0，Windows 用 `gradlew.bat`）
 
 > 说明：
 > - 构建插件用新一代 2.x DSL（`intellijPlatform {}`），兼容 Gradle 8.5+ 与 9.x
@@ -27,12 +31,18 @@
 > - **跑 Gradle 的 JDK 必须是 17～23**：Kotlin 2.0.21 的编译器不认识 JDK 25 的版本号，
 >   会以 `IllegalArgumentException: 25.0.2` 形式报 internal compiler error。
 >   IDEA 里对应 Settings → Build Tools → Gradle → Gradle JVM
+> - 换了 JDK 仍报同一个版本号时，**是 Kotlin daemon 没重启**——它独立于 Gradle daemon
+>   常驻，会跨构建复用旧 JVM。跑 `./gradlew --stop` 后再杀掉残留的 `KotlinCompileDaemon`
+> - `jvmToolchain(17)` 救不了上面这条：toolchain 管的是编译产物的目标 JVM 与 javac，
+>   管不到 Kotlin 编译器进程本身跑在哪个 JVM 上
+> - 产物名由 `build.gradle.kts` 末尾的 `archiveBaseName` 固定为 `dsh-ide-bridge`；
+>   不固定的话会跟随子项目名变成 `idea-plugin-*.zip`
 > - 插件不捆绑 kotlin-stdlib / kotlinx-serialization：这两个平台自带，
 >   重复捆绑会因类加载 parent-first 导致编译期与运行期版本不一致。JSON 用平台自带的 Gson
 
 ## 安装
 
-1. `./gradlew buildPlugin` 得到 zip
+1. 在仓库根跑 `./gradlew :idea-plugin:buildPlugin` 得到 zip
 2. IDEA → Settings → Plugins → ⚙️ → **Install Plugin from Disk…** → 选 zip → 重启
 
 ## 配置

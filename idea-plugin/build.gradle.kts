@@ -40,3 +40,9 @@ intellijPlatform {
 kotlin {
     jvmToolchain(17)
 }
+
+// 产物名跟随插件标识，而不是目录名。多项目化后 project.name 成了 idea-plugin，
+// 默认会打出 idea-plugin-0.1.2.zip——与 plugin.xml 的 id、DSH 端包名、文档记载全对不上
+tasks.named<Zip>("buildPlugin") {
+    archiveBaseName.set("dsh-ide-bridge")
+}

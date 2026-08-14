@@ -37,14 +37,21 @@ idea-plugin  ──POST /ide/context──►  dsh-plugin (host 半部)
 
 ## 两端如何各自就位
 
-**IDEA 端**——构建出 zip 后从磁盘装：
+**IDEA 端**——构建出 zip 后从磁盘装。仓库根是 Gradle 多项目构建，**在根目录执行**：
 
 ```powershell
-cd idea-plugin
-./gradlew buildPlugin        # 产物 build/distributions/dsh-ide-bridge-*.zip
+./gradlew :idea-plugin:buildPlugin
+# 产物 idea-plugin/build/distributions/dsh-ide-bridge-0.1.2.zip
 ```
 
-跑 Gradle 的 JDK 必须是 17～23（Kotlin 2.0.21 的编译器不认 JDK 25 的版本号）。
+⚠️ **跑 Gradle 的 JDK 必须是 17～23**。Kotlin 2.0.21 的编译器解析不了 JDK 25 的版本号，
+会报 `IllegalArgumentException: 25.0.2` 的 internal compiler error。
+IDEA 里对应 Settings → Build Tools → Gradle → Gradle JVM。
+
+> 换了 JDK 却仍报同一个版本号，**不是没生效，是 Kotlin daemon 没重启**——
+> 它是独立于 Gradle daemon 的常驻进程，会跨构建复用旧 JVM。
+> 解法：`./gradlew --stop`，再杀掉残留的 `KotlinCompileDaemon` 进程。
+
 详见 [`idea-plugin/README.md`](idea-plugin/README.md)。
 
 **DSH 端**——本仓库的 `dsh-plugin/` 是开发源码，DSH 实际加载的是
