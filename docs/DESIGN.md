@@ -495,7 +495,13 @@ junction 对 pnpm 与 Node 解析透明，profile 那三处配置无需改动。
 > 且无任何报错。排查这类现象时第一步应是比对两边文件是否一致。
 
 **连带影响**：
-- 构建路径变为 `idea-plugin/gradlew buildPlugin`，产物落在 `idea-plugin/build/distributions/`
+- 仓库根是 Gradle 多项目构建（根 `settings.gradle.kts` + `include("idea-plugin")`），
+  wrapper 与 `gradle.properties` 都在根：前者因为根目录得有 `gradlew` 可用，
+  后者因为 `org.gradle.jvmargs` 是 daemon 级配置，只认根目录那一份，
+  留在子项目里会被静默忽略。构建命令 `./gradlew :idea-plugin:buildPlugin`，
+  产物落在 `idea-plugin/build/distributions/`
+- 产物名由 `archiveBaseName` 固定为 `dsh-ide-bridge`：intellijPlatform 默认拿
+  `project.name` 打包，多项目化后会变成 `idea-plugin-*.zip`，与 plugin.xml 的 id 对不上
 - `.gitignore` 中 wrapper jar 的否定规则改用 `**/` 前缀，否则下移后锚定路径失配
 - `.gitignore` 保留 `node_modules/` 一条：当前方案下仓库内不会生成它，
   但该目录任何情况下都不应入库，留着无害
