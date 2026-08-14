@@ -2,13 +2,20 @@
 .gradle/
 build/
 # wrapper 的 jar 必须入库，否则 clone 下来跑不了 ./gradlew
-!gradle/wrapper/gradle-wrapper.jar
+# 用 ** 而非锚定路径：Gradle 工程已下移到 idea-plugin/，写死 gradle/ 开头会匹配不到
+!**/gradle/wrapper/gradle-wrapper.jar
 
 # Kotlin 2.x 增量编译的会话目录，纯本地状态
 .kotlin/
 
 # intellijPlatform 2.x 下载并解压的 IDE 发行版与插件产物，体积大且完全可重建
 .intellijPlatform/
+
+# ---- Node / pnpm ----
+# dsh-plugin 经 junction 挂载为 DSH profile 的 pnpm workspace 成员，
+# 在 ~/.dsh/profiles/web/ 下跑 pnpm install 会顺着 junction 在本仓库里生成 node_modules
+node_modules/
+.pnpm-debug.log*
 
 # ---- IntelliJ IDEA ----
 # 本项目的 .idea 全部由 Gradle 导入自动生成，重新 Reload 即可重建；
